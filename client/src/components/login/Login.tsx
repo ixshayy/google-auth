@@ -77,7 +77,7 @@ const LoginForm: React.FC = () => {
   return (
     <form action="#" method="POST" className="space-y-6" onSubmit={handleFormSubmit}>
       <div>
-        <Label htmlfor="email" content="Email address" />
+        <Label htmlFor="email" content="Email address" />
         <div className="mt-2">
           <Input
             id="email"
@@ -91,7 +91,7 @@ const LoginForm: React.FC = () => {
 
       <div>
         <div className="flex items-center justify-between">
-          <Label htmlfor="password" content="Password" />
+          <Label htmlFor="password" content="Password" />
           <div className="text-sm">
             <a
               href="#"
