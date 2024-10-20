@@ -10,6 +10,10 @@ import Label from "../ui/label/Label";
 import Input from "../ui/input/Input";
 import Button from "../ui/button/Button";
 import { ILoginFormData } from "../../interfaces/forms";
+import { validateFormsInput } from "../../utils/formValidation";
+import { useNavigate } from "react-router-dom";
+
+
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -22,24 +26,48 @@ const LoginForm: React.FC = () => {
     password: "",
   });
 
-  const handleInputEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      email: value,
-    }));
+  const [errors, setErrors] = useState<Partial<ILoginFormData>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof ILoginFormData, boolean>>>({
+    email: false,
+    password: false,
+  });
+
+
+  const checkInputErrors = (value: string, field: keyof ILoginFormData) => {
+    const err = validateFormsInput({ ...formData, [field]: value }, "login");
+    setErrors(err);
   };
 
-  const handleInputPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const setFormInputData = (value: string, field: keyof ILoginFormData) => {
     setFormData((prev) => ({
       ...prev,
-      password: value,
+      [field]: value,
     }));
+
+    if (touched[field]) {
+      checkInputErrors(value, field);
+    }
   };
+
+  const handleBlur = (field: keyof ILoginFormData) => {
+    setTouched((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
+
+    checkInputErrors(formData[field], field);
+  };
+  
 
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    const validationErrors = validateFormsInput(formData, "login");
+  
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
     try {
       const response = await axios.post(API_URL, formData);
@@ -78,14 +106,16 @@ const LoginForm: React.FC = () => {
     <form action="#" method="POST" className="space-y-6" onSubmit={handleFormSubmit}>
       <div>
         <Label htmlFor="email" content="Email address" />
-        <div className="mt-2">
+        <div className="mt-2 relative">
           <Input
             id="email"
             name="email"
             type={"email"}
             required={true}
-            onChange={handleInputEmailChange}
+            onChange={(e) => setFormInputData(e.target.value, "email")}
+            onBlur={() => handleBlur("email")}
           />
+          {touched.email && errors.email&& <small className="text-red-500 absolute">{errors.email}</small>}
         </div>
       </div>
 
@@ -101,14 +131,17 @@ const LoginForm: React.FC = () => {
             </a>
           </div>
         </div>
-        <div className="mt-2">
+        <div className="mt-2 relative">
           <Input
             id="password"
             name="password"
             type={"password"}
             required={true}
-            onChange={handleInputPasswordChange}
+            onChange={(e) => setFormInputData(e.target.value, "password")}
+            onBlur={() => handleBlur("password")}
           />
+          {touched.password && errors.password && <small className="text-red-500 absolute">{errors.password}</small>}
+
         </div>
       </div>
 
@@ -136,6 +169,13 @@ const LoginForm: React.FC = () => {
 };
 
 const Login: React.FC = () => {
+
+  const navigate = useNavigate();
+
+  const navigateToSignUpPage = () => {
+    navigate("/signup")
+  }
+
   return (
     <div className="h-screen w-screen bg-white">
       <div className="h-full">
@@ -156,8 +196,8 @@ const Login: React.FC = () => {
             <p className="mt-10 text-center text-sm text-gray-500">
               Not a member?{" "}
               <a
-                href="#"
-                className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
+                className="font-semibold leading-6 cursor-pointer text-indigo-600 hover:text-indigo-500"
+                onClick={navigateToSignUpPage}
               >
                 Sign Up
               </a>
