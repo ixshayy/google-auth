@@ -1,22 +1,15 @@
 import express, {Request, Response} from "express";
-import { handleGetAllUsers } from "../controllers/UserController";
+import { handleGetAllUsers, handleGetUserDetails, handleUpdateUser, handleCreateGuestUser } from "../controllers/userController";
+import { checkToken, verifyRoute } from "../middlewares/authMiddleware";
+
 
 const router = express.Router();
 
 
-router.get("/", async (req : Request, res : Response) => {
-    try{
-        const users = await handleGetAllUsers();
-        res.status(200).json(users);
-    }catch(err){
-        console.error("Error in / route:", err);
-        res.status(500).json({ status: "error", message: "Failed to fetch users" });
-    }
-
-})
-
-router.get("/:id", async (req, res) => {
-    
-});
+router.get("/", checkToken, verifyRoute,  handleGetAllUsers)   //Get all users (Admin only)
+router.get("/:id", checkToken, verifyRoute, handleGetUserDetails);  //Get user profile by ID
+router.patch("/:id", checkToken, verifyRoute, handleUpdateUser);   //Update user profile
+router.delete("/:id", () => {});   //Delete user
+router.post("/guest", handleCreateGuestUser);  //Create guest user
 
 export default router;
