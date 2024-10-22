@@ -15,6 +15,7 @@ const API_URL = import.meta.env.VITE_SIGNUP_API_URL;
 
 
 const SignUpForm: React.FC = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<ISignUpFormData>({
       fullName: "",
       email: "",
@@ -66,10 +67,13 @@ const SignUpForm: React.FC = () => {
   
       try {
         const res = await axios.post(API_URL, formData);
-        if (res.status === 202) {
-          console.log("Sign Up successful");
+        if (res.status === 200) {
+          const token = res.data.token;
+          localStorage.setItem("auth-token", token);
+          navigate("/home");
+          console.log("Sign Up successful", token);
         } else {
-          console.log("Error occurred");
+          console.log("Error occurred during sign up", res.status);
         }
       } catch (err) {
         console.error(err);
